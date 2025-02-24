@@ -1,22 +1,27 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
 from database import Base, engine
 from routers import products, reviews, cart, wishlist, search, auth
 
 # Initialize FastAPI app
 app = FastAPI()
 
-# ✅ Enable CORS
+# ✅ Enable CORS for frontend communication
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Allow frontend origin
+    allow_origins=["*"],  # Replace "*" with ["https://your-frontend-url.onrender.com"] when deployed
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+
+# Define OAuth2 security scheme for authentication
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 # Include routers
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])

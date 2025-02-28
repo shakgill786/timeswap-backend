@@ -13,7 +13,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 # ✅ Enable CORS for frontend communication (Use frontend domain when deployed)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://timeswap-frontend.onrender.com"],  # Change * to frontend URL
+    allow_origins=["http://localhost:5173"],  # Allow local frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

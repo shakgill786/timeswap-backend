@@ -4,15 +4,43 @@ from database import get_db
 import models
 from routers.auth import get_current_user
 
-
 router = APIRouter()
 
 @router.get("/")
 def view_wishlist(db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    return db.query(models.Wishlist).filter(models.Wishlist.user_id == user.id).all()
+    wishlist_items = (
+        db.query(models.Wishlist, models.Product)
+        .join(models.Product, models.Product.id == models.Wishlist.product_id)
+        .filter(models.Wishlist.user_id == user.id)
+        .all()
+    )
+
+    return [
+        {
+            "wishlist_id": item.Wishlist.id,
+            "product": {
+                "id": item.Product.id,
+                "title": item.Product.title,
+                "description": item.Product.description,
+                "image": item.Product.image,
+                "price": getattr(item.Product, "price", "N/A")
+            }
+        }
+        for item in wishlist_items
+    ]
 
 @router.post("/{product_id}")
 def add_to_wishlist(product_id: int, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    # ✅ Ensure product exists
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    # ✅ Prevent duplicate entries
+    existing_item = db.query(models.Wishlist).filter(models.Wishlist.user_id == user.id, models.Wishlist.product_id == product_id).first()
+    if existing_item:
+        raise HTTPException(status_code=400, detail="Item already in wishlist")
+
     wishlist_item = models.Wishlist(user_id=user.id, product_id=product_id)
     db.add(wishlist_item)
     db.commit()

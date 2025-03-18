@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
 
 ### 🚀 User Schemas ###
 class UserCreate(BaseModel):
@@ -55,3 +55,11 @@ class ReviewResponse(ReviewBase):
 
     class Config:
         from_attributes = True
+
+### 🚀 Cart Schemas ###
+class CartResponse(BaseModel):
+    cart_id: int
+    product: ProductResponse
+
+class CartListResponse(BaseModel):
+    items: List[CartResponse]
